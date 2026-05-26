@@ -1,0 +1,256 @@
+/* ===================================================
+   Onboarding Overlay — 라이트 테마
+   =================================================== */
+
+/* ── 전체 오버레이 ── */
+.onboarding-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  overflow-y: auto;
+  transition: opacity 0.45s ease;
+}
+.onboarding-overlay.is-hiding {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ── 음성 온보딩 ── */
+.voice-onboarding {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  animation: obFadeUp 0.5s ease forwards;
+  padding-bottom: 2rem;
+}
+
+.voice-onboarding-title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #111827;
+  text-align: center;
+  margin-bottom: 0.25rem;
+}
+
+.sphere-wrap {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  flex-shrink: 0;
+  background: var(--color-primary-50, #eef2ff);
+  border-radius: 50%;
+  box-shadow: 0 0 0 6px #e0e7ff, 0 0 32px rgba(99,102,241,0.15);
+}
+.sphere-canvas {
+  display: block;
+  border-radius: 50%;
+}
+.voice-transcript {
+  min-height: 2rem;
+  font-size: 1.1rem;
+  color: #475569;
+  text-align: center;
+  font-style: italic;
+  letter-spacing: 0.01em;
+  max-width: 480px;
+}
+
+/* ── 텍스트 온보딩 ── */
+.text-onboarding {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  animation: obFadeUp 0.5s ease forwards;
+  padding-bottom: 2rem;
+}
+.text-ob-guide {
+  font-size: 1rem;
+  color: #334155;
+  text-align: center;
+}
+
+/* ── 공통 링크 버튼 ── */
+.ob-link {
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 0.975rem;
+  color: #64748b;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.15s;
+  padding: 0;
+}
+.ob-link:hover { color: #334155; }
+
+/* ── StepSelector ── */
+.step-selector {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+/* 진행 표시 */
+.step-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.step-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #cbd5e1;
+  transition: background 0.3s;
+}
+.step-dot.active {
+  background: #6366f1;
+  box-shadow: 0 0 8px rgba(99,102,241,0.4);
+}
+.step-dot.done { background: #10b981; }
+.step-line {
+  width: 32px;
+  height: 2px;
+  background: #cbd5e1;
+  border-radius: 2px;
+  transition: background 0.3s;
+}
+.step-line.done { background: #10b981; }
+.step-count {
+  margin-left: 0.75rem;
+  font-size: 0.875rem;
+  color: #64748b;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 요약 칩 */
+.step-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.step-chip {
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+  border-radius: 999px;
+  padding: 0.25rem 0.85rem;
+  font-size: 0.9rem;
+  color: #4f46e5;
+  font-weight: 600;
+}
+.step-chip-sep {
+  color: #cbd5e1;
+  font-size: 0.75rem;
+}
+
+/* 질문 */
+.step-question {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #111827;
+  text-align: center;
+  line-height: 1.3;
+}
+@media (max-width: 480px) {
+  .step-question { font-size: 1.3rem; }
+}
+.step-hint {
+  font-size: 0.9rem;
+  color: #64748b;
+  text-align: center;
+  margin-top: -0.5rem;
+}
+
+/* 선택지 그리드 */
+.step-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 0.75rem;
+  width: 100%;
+}
+.step-option {
+  padding: 0.85rem 0.5rem;
+  border: 2px solid #cbd5e1;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  color: #111827;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.18s, background 0.18s, transform 0.12s, color 0.18s;
+  text-align: center;
+  min-height: 56px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.step-option:hover {
+  border-color: #6366f1;
+  background: #eef2ff;
+  color: #4f46e5;
+  transform: scale(1.03);
+}
+.step-option.selected {
+  border-color: #6366f1;
+  background: #e0e7ff;
+  color: #4338ca;
+  font-weight: 700;
+  transform: scale(1.06);
+  box-shadow: 0 0 16px rgba(99,102,241,0.25);
+}
+
+/* ── 애니메이션 ── */
+@keyframes obFadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in-fast {
+  animation: obFadeUp 0.38s ease forwards;
+}
+
+/* ── 음성 상태 뱃지 ── */
+.voice-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.9rem;
+  background: #eef2ff;
+  border: 1.5px solid #c7d2fe;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  color: #4f46e5;
+  font-weight: 600;
+}
+.voice-status-badge.listening {
+  background: #ecfdf5;
+  border-color: #6ee7b7;
+  color: #059669;
+}
+.voice-pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(0.75); }
+}
