@@ -128,13 +128,13 @@ async def _search_welfare_grounding(
     occupation_kor = OCCUPATION_LABEL.get(occupation, occupation) or "일반"
     interest_kor = ", ".join(interests) if interests else "생활 전반"
 
-    prompt = f"""다음 조건에 맞는 현재 신청 가능한 복지 서비스를 bokjiro.go.kr, mohw.go.kr, 지역 복지관 사이트에서 검색하여 6~8개를 찾아 주세요.
+    prompt = f"""다음 조건에 맞는 현재 신청 가능한 복지 서비스를 bokjiro.go.kr, mohw.go.kr, 해당 지역 복지관 사이트에서 검색하여 6~8개를 찾아 주세요.
 
 조건:
 - 나이: {age}세
 - 거주 지역: {region_name}
 - 직업/신분: {occupation_kor}
-- 관심 분야: {interest_kor}
+- 필요한 지원 분야: {interest_kor} (복지로 공식 분류 기준)
 
 각 서비스에 대해 반드시 다음 JSON 형식으로만 응답해 주세요. 다른 설명 없이 JSON만 출력하세요.
 
