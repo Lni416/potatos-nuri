@@ -28,6 +28,9 @@ dist/
 .Spotlight-V100
 .Trashes
 
+# Firebase
+.firebase/
+
 # IDE
 .idea/
 .vscode/
