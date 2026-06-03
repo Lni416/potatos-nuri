@@ -10,7 +10,7 @@ export function createHeader() {
   header.innerHTML = `
     <div class="container">
       <div class="header-logo" id="header-home-link">
-        <span class="logo-icon">🌏</span>
+        <span class="logo-icon">🐰</span>
         <span class="logo-text">NuRI</span>
       </div>
       <span class="header-subtitle">맞춤 복지·행사 정보</span>
