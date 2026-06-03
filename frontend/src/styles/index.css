@@ -234,6 +234,34 @@ img {
   line-height: 1.75;
 }
 
+/* ── 홈 폼 음성 전환 버튼 ── */
+.hero-voice-wrap {
+  margin-top: var(--space-xl);
+}
+.hero-voice-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 0.7rem 1.6rem;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(99,102,241,0.35);
+  transition: background 0.15s, transform 0.12s, box-shadow 0.15s;
+}
+.hero-voice-btn:hover {
+  background: var(--color-primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(99,102,241,0.4);
+}
+.hero-voice-btn:active { transform: translateY(0); }
+.hero-voice-icon { font-size: 1.15rem; }
+
 /* ── Form Styles ── */
 .form-section {
   background: var(--color-bg-card);

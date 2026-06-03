@@ -37,7 +37,7 @@ class NuriApp {
     });
 
     this.showHome();
-    this.showOnboarding();
+    this.showVoiceOverlay();
   }
 
   setPage(pageElement) {
@@ -47,15 +47,22 @@ class NuriApp {
   }
 
   showHome() {
-    const page = createHomePage((formData) => this.handleSearch(formData));
+    // 음성 지원 시 홈 폼에 "음성으로 선택" 버튼 제공
+    const onVoice = isSpeechSupported() ? () => this.showVoiceOverlay() : null;
+    const page = createHomePage((formData) => this.handleSearch(formData), onVoice);
     this.setPage(page);
   }
 
   /**
-   * 온보딩 오버레이 — 음성인식이 지원되면 바로 음성 모드로 시작.
-   * 음성 불가 시 텍스트(클릭) 모드로 자동 전환.
+   * 음성 온보딩 오버레이.
+   * - 완료 시 검색 실행
+   * - 폼으로 전환 버튼 클릭 시 오버레이만 닫고 홈 폼 노출
+   * - 음성 불가 시 텍스트 스텝 선택기로 자동 전환
    */
-  showOnboarding() {
+  showVoiceOverlay() {
+    // 이미 열려있으면 중복 방지
+    if (document.querySelector('.onboarding-overlay')) return;
+
     const overlay = document.createElement('div');
     overlay.className = 'onboarding-overlay';
 
@@ -75,32 +82,26 @@ class NuriApp {
       overlay.appendChild(pageEl);
     };
 
-    const showText = () => {
-      const voiceAvailable = isSpeechSupported();
-      const el = createTextOnboarding({
-        onComplete: (formData) => close(formData),
-        onBack: voiceAvailable ? showVoice : null,
-      });
-      showPage(el);
-    };
-
-    const showVoice = () => {
+    if (isSpeechSupported()) {
       const el = createVoiceOnboarding({
         onComplete: (formData) => close(formData),
-        onFallback: showText,
+        onFallback: () => close(null), // 오버레이 닫기 → 홈 폼 노출
       });
       showPage(el);
-    };
-
-    // 음성인식 지원 시 바로 음성 모드로 시작 (주된 인터랙션)
-    if (isSpeechSupported()) {
-      showVoice();
     } else {
-      showText();
+      // 음성 불가 시 텍스트 스텝 선택기 (폴백)
+      const el = createTextOnboarding({
+        onComplete: (formData) => close(formData),
+        onBack: null,
+      });
+      showPage(el);
     }
 
     document.body.appendChild(overlay);
   }
+
+  /** @deprecated showVoiceOverlay로 대체 */
+  showOnboarding() { this.showVoiceOverlay(); }
 
   async handleSearch(formData) {
     const loading = createLoading();

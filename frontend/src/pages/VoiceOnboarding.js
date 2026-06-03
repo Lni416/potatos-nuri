@@ -106,7 +106,7 @@ export function createVoiceOnboarding({ onComplete, onFallback }) {
   modeBar.className = 'ob-mode-bar';
   modeBar.innerHTML = `
     <span class="ob-mode-current">🎤 음성 선택 중</span>
-    <button type="button" class="ob-mode-switch-btn">🖱️ 버튼으로 선택</button>
+    <button type="button" class="ob-mode-switch-btn">📝 전체 폼으로 입력</button>
   `;
   modeBar.querySelector('.ob-mode-switch-btn').addEventListener('click', onFallback);
   el.appendChild(modeBar);

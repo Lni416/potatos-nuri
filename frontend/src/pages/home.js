@@ -4,7 +4,11 @@
 
 import { createForm } from "../components/form.js";
 
-export function createHomePage(onSearch) {
+/**
+ * @param {Function} onSearch  - 폼 제출 콜백
+ * @param {Function|null} onVoice - 음성 온보딩 열기 콜백 (미지원 시 null)
+ */
+export function createHomePage(onSearch, onVoice = null) {
   const page = document.createElement("main");
   page.className = "page-content fade-in";
 
@@ -26,6 +30,21 @@ export function createHomePage(onSearch) {
       </p>
     </div>
   `;
+
+  // 음성 지원 시 음성으로 전환 버튼 추가
+  if (onVoice) {
+    const voiceBtnWrap = document.createElement("div");
+    voiceBtnWrap.className = "container hero-voice-wrap";
+    voiceBtnWrap.innerHTML = `
+      <button type="button" class="hero-voice-btn">
+        <span class="hero-voice-icon">🎤</span>
+        <span>음성으로 선택하기</span>
+      </button>
+    `;
+    voiceBtnWrap.querySelector('.hero-voice-btn').addEventListener('click', onVoice);
+    hero.appendChild(voiceBtnWrap);
+  }
+
   page.appendChild(hero);
 
   const formContainer = document.createElement("div");
