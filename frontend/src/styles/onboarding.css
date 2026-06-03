@@ -81,6 +81,44 @@
   text-align: center;
 }
 
+/* ── 모드 전환 바 ── */
+.ob-mode-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: #f1f5f9;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 999px;
+  padding: 0.35rem 0.5rem 0.35rem 0.85rem;
+  align-self: flex-start;
+  margin-bottom: 0.25rem;
+}
+.ob-mode-current {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #64748b;
+  white-space: nowrap;
+}
+.ob-mode-switch-btn {
+  background: #ffffff;
+  border: 1.5px solid #c7d2fe;
+  border-radius: 999px;
+  padding: 0.3rem 0.85rem;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #4f46e5;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+}
+.ob-mode-switch-btn:hover {
+  background: #eef2ff;
+  border-color: #818cf8;
+  transform: scale(1.03);
+}
+.ob-mode-switch-btn:active { transform: scale(0.97); }
+
 /* ── 공통 링크 버튼 ── */
 .ob-link {
   background: none;

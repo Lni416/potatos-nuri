@@ -101,6 +101,16 @@ export function createVoiceOnboarding({ onComplete, onFallback }) {
   const el = document.createElement('div');
   el.className = 'voice-onboarding';
 
+  // 모드 전환 바 (상단)
+  const modeBar = document.createElement('div');
+  modeBar.className = 'ob-mode-bar';
+  modeBar.innerHTML = `
+    <span class="ob-mode-current">🎤 음성 선택 중</span>
+    <button type="button" class="ob-mode-switch-btn">🖱️ 버튼으로 선택</button>
+  `;
+  modeBar.querySelector('.ob-mode-switch-btn').addEventListener('click', onFallback);
+  el.appendChild(modeBar);
+
   // 제목
   const titleEl = document.createElement('p');
   titleEl.className = 'voice-onboarding-title';
@@ -135,12 +145,6 @@ export function createVoiceOnboarding({ onComplete, onFallback }) {
   });
   el.appendChild(stepEl);
 
-  // 텍스트 모드 전환 버튼
-  const fallbackBtn = document.createElement('button');
-  fallbackBtn.className = 'ob-link';
-  fallbackBtn.textContent = '버튼으로 직접 선택할게요';
-  fallbackBtn.addEventListener('click', onFallback);
-  el.appendChild(fallbackBtn);
 
   // 상태
   let sphere = null;
