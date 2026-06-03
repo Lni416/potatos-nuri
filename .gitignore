@@ -31,6 +31,10 @@ dist/
 # Firebase
 .firebase/
 
+# 배포용 환경변수 (실제 키 포함 — 절대 커밋 금지)
+.env.cloudrun.yaml
+*.cloudrun.yaml
+
 # IDE
 .idea/
 .vscode/
