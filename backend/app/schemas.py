@@ -24,6 +24,8 @@ class SummaryCard(BaseModel):
     source_url: str = Field("", description="원문 출처 URL")
     source_name: str = Field("", description="출처 기관명")
     apply_deadline: str = Field("", description="신청 기한")
+    search_region: str = Field("", description="실제 검색에 사용된 지역명")
+    is_region_expanded: bool = Field(False, description="지역 범위 확장 여부")
 
 
 class SearchResponse(BaseModel):

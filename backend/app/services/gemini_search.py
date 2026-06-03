@@ -26,6 +26,43 @@ EVENT_CAP = 8
 GEMINI_RETRY_DELAYS_SECONDS = (1.0, 2.0)
 TRANSIENT_GEMINI_ERROR_CODES = {429, 500, 502, 503, 504}
 
+# 광역시/특별시 → 인접 도 (지역 폴백에 사용)
+METRO_TO_PROVINCE: dict[str, str] = {
+    "서울특별시": "경기도",
+    "인천광역시": "경기도",
+    "대전광역시": "충청남도",
+    "광주광역시": "전라남도",
+    "대구광역시": "경상북도",
+    "울산광역시": "경상남도",
+    "부산광역시": "경상남도",
+    "세종특별자치시": "충청남도",
+}
+
+
+def _region_fallback_chain(region_name: str) -> list[str]:
+    """
+    지역명으로부터 점진적으로 넓어지는 검색 지역 체인을 반환합니다.
+    예: "대구광역시 달성군"  → ["대구광역시 달성군", "대구광역시", "경상북도"]
+        "대구광역시"        → ["대구광역시", "경상북도"]
+        "경기도 수원시"     → ["경기도 수원시", "경기도"]
+    """
+    parts = region_name.strip().split()
+    chain: list[str] = [region_name]
+
+    if len(parts) >= 2:
+        city = parts[0]
+        if city != region_name:
+            chain.append(city)
+        if city in METRO_TO_PROVINCE:
+            chain.append(METRO_TO_PROVINCE[city])
+    elif region_name in METRO_TO_PROVINCE:
+        chain.append(METRO_TO_PROVINCE[region_name])
+
+    # 중복 제거 (순서 유지)
+    seen: set[str] = set()
+    return [r for r in chain if not (r in seen or seen.add(r))]  # type: ignore[func-returns-value]
+
+
 INTEREST_KEYWORDS: dict[str, list[str]] = {
     "생활지원": ["생활비", "생계", "긴급복지", "식품", "에너지", "냉난방", "생활지원", "기초생활", "생계급여", "에너지바우처"],
     "의료건강": ["의료비", "건강", "병원", "치료", "건강검진", "재활", "정신건강", "요양", "의약품", "의료급여", "진료"],
@@ -366,14 +403,31 @@ async def search_and_summarize(
     client = genai.Client(api_key=settings.GEMINI_API_KEY)
     models = _model_candidates(settings.GEMINI_MODEL, settings.GEMINI_FALLBACK_MODELS)
 
-    # 복지(grounding) + 행사(TourAPI) 병렬 수집
-    welfare_task = _search_welfare_grounding(client, models, age, region_name, occupation, interests)
-    events_task = _collect_events(region_name)
-    welfare_raw, event_raw = await asyncio.gather(welfare_task, events_task)
+    # ── 복지 정보: 지역 폴백 체인으로 순차 검색 ──
+    region_chain = _region_fallback_chain(region_name)
+    welfare_raw: list[dict] = []
+    actual_region = region_name
+
+    for candidate in region_chain:
+        logger.info("복지 검색 시도: region=%s", candidate)
+        welfare_raw = await _search_welfare_grounding(client, models, age, candidate, occupation, interests)
+        if welfare_raw:
+            actual_region = candidate
+            break
+        logger.info("결과 없음, 지역 범위 확장: %s → 다음 후보", candidate)
+
+    is_region_expanded = actual_region != region_name
+    if is_region_expanded:
+        logger.info("지역 확장 적용: %s → %s (%d건)", region_name, actual_region, len(welfare_raw))
+
+    # ── 행사 정보: TourAPI (원래 지역 기준) ──
+    event_raw = await _collect_events(region_name)
 
     all_tagged: list[dict] = (
-        [{**w, "category": "복지"} for w in welfare_raw]
-        + [{**e, "category": "행사"} for e in event_raw[:EVENT_CAP]]
+        [{**w, "category": "복지", "search_region": actual_region, "is_region_expanded": is_region_expanded}
+         for w in welfare_raw]
+        + [{**e, "category": "행사", "search_region": region_name, "is_region_expanded": False}
+           for e in event_raw[:EVENT_CAP]]
     )
 
     if interests:
@@ -385,7 +439,7 @@ async def search_and_summarize(
         logger.warning("수집된 항목이 없습니다.")
         return []
 
-    logger.info("수집 완료: 복지 %d건 / 행사 %d건", len(welfare_raw), len(event_raw))
+    logger.info("수집 완료: 복지 %d건 / 행사 %d건 (검색 지역: %s)", len(welfare_raw), len(event_raw), actual_region)
 
     # raw_text를 포함한 카드 목록 반환 (요약은 on-demand)
     results = []
@@ -395,10 +449,12 @@ async def search_and_summarize(
             "id": item_id,
             "title": item.get("title", "정보"),
             "category": item.get("category", "복지"),
-            "summary": "",          # on-demand 요약 전 비어있음
+            "summary": "",
             "raw_text": item.get("raw_text", ""),
             "source_name": item.get("source_name", ""),
             "source_url": item.get("source_url", ""),
+            "search_region": item.get("search_region", actual_region),
+            "is_region_expanded": item.get("is_region_expanded", False),
         })
 
     return results

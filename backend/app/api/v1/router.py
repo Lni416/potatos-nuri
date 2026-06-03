@@ -61,10 +61,12 @@ async def search(request: SearchRequest):
             id=item.get("id") or str(uuid.uuid4())[:8],
             title=item.get("title", "정보"),
             category=item.get("category", "복지"),
-            summary="",          # 요약은 /summarize에서 on-demand 생성
+            summary="",
             raw_text=item.get("raw_text", ""),
             source_url=item.get("source_url", ""),
             source_name=item.get("source_name", ""),
+            search_region=item.get("search_region", ""),
+            is_region_expanded=item.get("is_region_expanded", False),
         )
         for item in results
     ]

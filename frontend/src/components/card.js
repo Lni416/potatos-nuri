@@ -34,6 +34,10 @@ export function createCard(card, index = 0, userProfile = {}, options = {}) {
   );
 
   const feedArtSrc = isWelfare ? "/illustrations/welfare-feed.svg" : "/illustrations/event-feed.svg";
+  const regionBadge = card.is_region_expanded && card.search_region
+    ? `<span class="card-region-expanded">🗺️ ${escapeHtml(card.search_region)} 기준</span>`
+    : "";
+
   const inner =
     layout === "feed"
       ? `
@@ -43,8 +47,9 @@ export function createCard(card, index = 0, userProfile = {}, options = {}) {
       </span>
       <span class="card-list-main">
         <span class="card-title">${escapeHtml(card.title)}</span>
-        <span class="card-category ${categoryClass}">
-          ${categoryIcon} ${categoryLabel}
+        <span class="card-badges">
+          <span class="card-category ${categoryClass}">${categoryIcon} ${categoryLabel}</span>
+          ${regionBadge}
         </span>
       </span>
       <span class="card-expand-text">크게 보기</span>
@@ -54,8 +59,9 @@ export function createCard(card, index = 0, userProfile = {}, options = {}) {
     <span class="card-preview-inner">
       <span class="card-list-main">
         <span class="card-title">${escapeHtml(card.title)}</span>
-        <span class="card-category ${categoryClass}">
-          ${categoryIcon} ${categoryLabel}
+        <span class="card-badges">
+          <span class="card-category ${categoryClass}">${categoryIcon} ${categoryLabel}</span>
+          ${regionBadge}
         </span>
       </span>
       <span class="card-expand-text">크게 보기</span>

@@ -816,6 +816,26 @@ img {
   background: #fff7ed;
   color: #ea580c;
 }
+.card-badges {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-top: 0.25rem;
+}
+.card-region-expanded {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.65rem;
+  background: #fffbeb;
+  border: 1.5px solid #fcd34d;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #92400e;
+  white-space: nowrap;
+}
 .card-title {
   font-size: var(--font-size-xl);
   font-weight: var(--font-weight-bold);
