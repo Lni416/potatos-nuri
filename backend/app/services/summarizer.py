@@ -5,14 +5,40 @@
 """
 import asyncio
 import logging
-from pathlib import Path
 
 from google import genai
 from google.genai import errors, types
 
 logger = logging.getLogger(__name__)
 
-_RULES_PATH = Path(__file__).resolve().parents[3] / "rules.md"
+# rules.md 내용 인라인 (Docker 빌드 컨텍스트 외부 파일 의존성 제거)
+_RULES_INLINE = """## [요약 규칙]
+1. **독자 수준:** 초등학교 고학년 ~ 중학생 수준의 어휘력을 가진 사람이나 어르신들도 한 번에 이해할 수 있도록 평이한 일상어로 작성하세요.
+2. **행정 용어 순화:** 어려운 한자어나 전문 용어는 반드시 쉬운 말로 풀어서 쓰세요.
+3. **사실 기반(No Hallucination):** 절대로 원문에 없는 혜택이나 조건을 지어내지 마세요.
+4. **정보 부족 안내:** 정보가 부족할 때는 "ℹ️ 원문에 자세한 안내가 없어 확인이 어려워요." 등의 표현을 사용하세요.
+5. **감정 표현:** 과하지 않게 공감형 이모지를 사용하세요. (권장: 🙂 😊 💡 📌 ℹ️ 🧭)
+6. **중요 내용 강조:** 핵심 단어와 조건은 **굵게** 표시하세요.
+7. **가독성 최우선:** 자연스러운 문장은 억지로 불릿으로 쪼개지 마세요.
+8. **간결한 구조화:** 아래 4개 섹션으로 요약하세요.
+
+## [출력 포맷]
+### 🎁 어떤 혜택(행사)인가요?
+(핵심 혜택 내용 1~2문장)
+
+### 🙋‍♀️ 누가 받을 수 있나요?
+- (나이, 소득, 거주지 등 지원 자격)
+
+### 📅 언제까지인가요?
+- (신청 기간 또는 행사 일시)
+
+### 📝 어떻게 신청하나요?
+- (온라인/오프라인 신청 방법 및 필수 서류)"""
+
+
+def _load_rules() -> str:
+    return _RULES_INLINE
+
 
 OCCUPATION_LABEL: dict[str, str] = {
     # 한국어 (StepSelector)
@@ -39,14 +65,7 @@ _TRANSIENT_CODES = {429, 500, 502, 503, 504}
 
 
 def _load_rules() -> str:
-    try:
-        content = _RULES_PATH.read_text(encoding="utf-8")
-        marker = "[원문 데이터]:"
-        idx = content.find(marker)
-        return content[:idx].strip() if idx != -1 else content.strip()
-    except FileNotFoundError:
-        logger.warning("rules.md 파일을 찾을 수 없습니다: %s", _RULES_PATH)
-        return ""
+    return _RULES_INLINE
 
 
 def _make_prompt(
@@ -106,7 +125,7 @@ async def summarize_card(
                     contents=prompt,
                     config=types.GenerateContentConfig(
                         temperature=0.3,
-                        max_output_tokens=2048,
+                        max_output_tokens=1024,
                     ),
                 )
                 text = (resp.text or "").strip()

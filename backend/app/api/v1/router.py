@@ -89,7 +89,8 @@ async def summarize(request: SummarizeRequest):
         raise HTTPException(status_code=503, detail="GEMINI_API_KEY가 설정되지 않았습니다.")
 
     client = genai.Client(api_key=settings.GEMINI_API_KEY)
-    models = _model_candidates(settings.GEMINI_MODEL, settings.GEMINI_FALLBACK_MODELS)
+    # 요약은 빠른 모델 우선, 실패 시 메인 모델로 폴백
+    models = _model_candidates(settings.GEMINI_SUMMARY_MODEL, [settings.GEMINI_MODEL])
 
     summary = await summarize_card(
         client=client,

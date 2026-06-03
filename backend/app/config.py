@@ -18,6 +18,8 @@ class Settings(BaseSettings):
         "gemini-2.5-flash-lite",
         "gemini-2.0-flash-001",
     ]
+    # 카드 요약 전용 모델 (빠른 응답 우선)
+    GEMINI_SUMMARY_MODEL: str = "gemini-2.5-flash-lite"
 
     # CORS 설정
     CORS_ORIGINS: list[str] = [
