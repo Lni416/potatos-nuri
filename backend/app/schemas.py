@@ -19,8 +19,8 @@ class SummaryCard(BaseModel):
     id: str = Field(..., description="고유 식별자")
     title: str = Field(..., description="혜택/행사 제목")
     category: str = Field("복지", description="카테고리 (복지/행사)")
-    summary: str = Field(..., description="Gemini가 요약한 본문 (마크다운)")
-    original_text: str = Field("", description="원문 텍스트")
+    summary: str = Field("", description="Gemini 요약 본문 (마크다운, on-demand 전 비어있을 수 있음)")
+    raw_text: str = Field("", description="원문 텍스트 (on-demand 요약에 사용)")
     source_url: str = Field("", description="원문 출처 URL")
     source_name: str = Field("", description="출처 기관명")
     apply_deadline: str = Field("", description="신청 기한")
@@ -32,3 +32,20 @@ class SearchResponse(BaseModel):
     cards: list[SummaryCard] = Field(default_factory=list)
     total_count: int = Field(0, description="총 결과 수")
     message: str = Field("", description="안내 메시지")
+
+
+class SummarizeRequest(BaseModel):
+    """단일 카드 on-demand 요약 요청."""
+
+    title: str = Field(..., description="서비스 제목")
+    raw_text: str = Field(..., description="원문 텍스트")
+    age: int = Field(30, ge=0, le=120, description="사용자 나이")
+    region_name: str = Field("", description="거주 지역")
+    occupation: str = Field("기타", description="직업 상태")
+    interests: list[str] = Field(default_factory=list, description="관심 분야")
+
+
+class SummarizeResponse(BaseModel):
+    """단일 카드 요약 응답."""
+
+    summary: str = Field(..., description="개인화된 마크다운 요약")

@@ -3,6 +3,17 @@
  */
 
 const MODAL_ID = "nuri-card-modal";
+
+/**
+ * 현재 열려있는 모달의 본문을 교체합니다 (on-demand 요약 완료 시 호출).
+ * @param {string} html
+ */
+export function updateModalBody(html) {
+  const root = document.getElementById(MODAL_ID);
+  if (!root || root.hidden) return;
+  const bodyEl = root.querySelector(".card-modal__body");
+  if (bodyEl) bodyEl.innerHTML = html;
+}
 const BODY_LOCK_ATTR = "data-nuri-modal-scroll-lock";
 const BODY_SCROLL_Y_ATTR = "data-nuri-modal-scroll-y";
 

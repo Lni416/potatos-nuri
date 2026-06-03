@@ -2,14 +2,16 @@
  * 결과 카드 컴포넌트 (클릭 시 중앙 팝업으로 상세 표시).
  */
 
-import { openCardModal } from "./cardModal.js";
+import { openCardModal, updateModalBody } from "./cardModal.js";
+import { summarizeCard } from "../utils/api.js";
 
 /**
- * @param {Object} card - SummaryCard 데이터
- * @param {number} index - 카드 인덱스 (애니메이션 딜레이용)
+ * @param {Object} card        - SummaryCard 데이터
+ * @param {number} index       - 카드 인덱스 (애니메이션 딜레이용)
+ * @param {Object} userProfile - 사용자 프로필 (on-demand 요약에 사용)
  * @param {{ layout?: "list"|"feed" }} [options]
  */
-export function createCard(card, index = 0, options = {}) {
+export function createCard(card, index = 0, userProfile = {}, options = {}) {
   const layout = options.layout === "feed" ? "feed" : "list";
   const isWelfare = card.category === "복지";
   const categoryClass = isWelfare ? "welfare" : "event";
@@ -62,15 +64,59 @@ export function createCard(card, index = 0, options = {}) {
   preview.innerHTML = inner;
 
   preview.addEventListener("click", () => {
-    const summaryHTML = formatSummary(card.summary);
     const categoryBadge = `<span class="card-category ${categoryClass}">${categoryIcon} ${categoryLabel}</span>`;
+
+    // 캐시된 요약이 있으면 바로 표시
+    if (card._cachedSummaryHTML) {
+      openCardModal({
+        title: card.title || "정보",
+        categoryLabel: categoryBadge,
+        summaryHTML: card._cachedSummaryHTML,
+        sourceName: card.source_name || "",
+        sourceUrl: card.source_url || "",
+      });
+      return;
+    }
+
+    // 로딩 스켈레톤과 함께 모달 즉시 열기
     openCardModal({
       title: card.title || "정보",
       categoryLabel: categoryBadge,
-      summaryHTML,
+      summaryHTML: `
+        <div class="summary-loading">
+          <div class="summary-loading__chip">✦ AI가 요약하고 있어요...</div>
+          <div class="summary-skeleton">
+            <div class="skeleton-heading"></div>
+            <div class="skeleton-line w80"></div>
+            <div class="skeleton-line w60"></div>
+            <div class="skeleton-heading mt"></div>
+            <div class="skeleton-line w90"></div>
+            <div class="skeleton-line w70"></div>
+            <div class="skeleton-heading mt"></div>
+            <div class="skeleton-line w50"></div>
+          </div>
+        </div>`,
       sourceName: card.source_name || "",
       sourceUrl: card.source_url || "",
     });
+
+    // on-demand 요약 요청
+    summarizeCard({
+      title: card.title || "",
+      raw_text: card.raw_text || "",
+      age: userProfile.age ?? 30,
+      region_name: userProfile.region_name ?? "",
+      occupation: userProfile.occupation ?? "기타",
+      interests: userProfile.interests ?? [],
+    })
+      .then(({ summary }) => {
+        const html = formatSummary(summary);
+        card._cachedSummaryHTML = html;
+        updateModalBody(html);
+      })
+      .catch(() => {
+        updateModalBody("<p>요약을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.</p>");
+      });
   });
 
   el.appendChild(preview);

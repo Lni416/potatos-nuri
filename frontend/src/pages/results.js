@@ -7,7 +7,7 @@ import { createCard } from "../components/card.js";
 
 const PAGE_SIZE = 8;
 
-function mountPaginatedSection(container, { title, icon, cards, layout }) {
+function mountPaginatedSection(container, { title, icon, cards, layout, userProfile }) {
   // 섹션 레이블 — step-chip 스타일
   const labelRow = document.createElement("div");
   labelRow.className = "results-section-label";
@@ -27,7 +27,7 @@ function mountPaginatedSection(container, { title, icon, cards, layout }) {
   const appendRange = (end) => {
     const start = grid.children.length;
     for (let i = start; i < end; i++) {
-      grid.appendChild(createCard(cards[i], i, { layout }));
+      grid.appendChild(createCard(cards[i], i, userProfile, { layout }));
     }
   };
 
@@ -58,10 +58,11 @@ function mountPaginatedSection(container, { title, icon, cards, layout }) {
 }
 
 /**
- * @param {Object}   data   - SearchResponse
- * @param {Function} onBack - 뒤로가기 콜백
+ * @param {Object}   data        - SearchResponse
+ * @param {Object}   userProfile - 검색에 사용된 사용자 정보 (개인화 요약용)
+ * @param {Function} onBack      - 뒤로가기 콜백
  */
-export function createResultsPage(data, onBack) {
+export function createResultsPage(data, userProfile, onBack) {
   const page = document.createElement("main");
   page.className = "page-content results-page-enter";
 
@@ -105,12 +106,12 @@ export function createResultsPage(data, onBack) {
 
     if (welfare.length > 0) {
       mountPaginatedSection(container, {
-        title: "복지 정보", icon: "🏛️", cards: welfare, layout: "feed",
+        title: "복지 정보", icon: "🏛️", cards: welfare, layout: "feed", userProfile,
       });
     }
     if (events.length > 0) {
       mountPaginatedSection(container, {
-        title: "행사·축제 정보", icon: "🎪", cards: events, layout: "list",
+        title: "행사·축제 정보", icon: "🎪", cards: events, layout: "list", userProfile,
       });
     }
   }

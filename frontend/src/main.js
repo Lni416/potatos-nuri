@@ -108,7 +108,7 @@ class NuriApp {
 
     try {
       const result = await searchInfo(formData);
-      const resultsPage = createResultsPage(result, () => this.showHome());
+      const resultsPage = createResultsPage(result, formData, () => this.showHome());
       this.setPage(resultsPage);
     } catch (error) {
       console.error("검색 실패:", error);
@@ -118,6 +118,7 @@ class NuriApp {
           total_count: 0,
           message: `⚠️ 오류가 발생했어요: ${error.message}. 잠시 후 다시 시도해 주세요.`,
         },
+        formData,
         () => this.showHome()
       );
       this.setPage(errorPage);

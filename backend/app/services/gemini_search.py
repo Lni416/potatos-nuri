@@ -353,8 +353,9 @@ async def search_and_summarize(
     interests: list[str],
 ) -> list[dict]:
     """
-    Gemini Google Search grounding으로 맞춤형 복지 정보를 수집하고,
-    TourAPI로 지역 행사를 보강한 뒤 Gemini로 시니어 친화적으로 요약합니다.
+    Gemini Google Search grounding으로 맞춤형 복지 정보를 수집하고
+    TourAPI로 지역 행사를 보강합니다.
+    요약은 /summarize 엔드포인트에서 on-demand로 처리됩니다.
     """
     settings = get_settings()
 
@@ -365,7 +366,7 @@ async def search_and_summarize(
     client = genai.Client(api_key=settings.GEMINI_API_KEY)
     models = _model_candidates(settings.GEMINI_MODEL, settings.GEMINI_FALLBACK_MODELS)
 
-    # ── 1단계: 복지(grounding) + 행사(TourAPI) 병렬 수집 ──
+    # 복지(grounding) + 행사(TourAPI) 병렬 수집
     welfare_task = _search_welfare_grounding(client, models, age, region_name, occupation, interests)
     events_task = _collect_events(region_name)
     welfare_raw, event_raw = await asyncio.gather(welfare_task, events_task)
@@ -384,29 +385,9 @@ async def search_and_summarize(
         logger.warning("수집된 항목이 없습니다.")
         return []
 
-    logger.info("1단계 완료: 복지 %d건 / 행사 %d건", len(welfare_raw), len(event_raw))
+    logger.info("수집 완료: 복지 %d건 / 행사 %d건", len(welfare_raw), len(event_raw))
 
-    # ── 2단계: 시니어 친화적 요약 ──
-    rules_text = _load_summary_rules()
-    summary_system = SUMMARY_SYSTEM_PROMPT_TEMPLATE.format(rules=rules_text)
-
-    items_for_summary = [
-        {"id": item.get("id", ""), "title": item.get("title", ""), "raw_text": item.get("raw_text", "")}
-        for item in items
-    ]
-
-    summary_prompt = f"""아래 {len(items_for_summary)}건의 복지/행사 항목을 각각 요약해 주세요.
-
-{json.dumps(items_for_summary, ensure_ascii=False, indent=2)}"""
-
-    summaries = await _request_gemini_summaries(
-        client=client,
-        models=models,
-        summary_prompt=summary_prompt,
-        summary_system=summary_system,
-    )
-
-    # ── 결과 조합 ──
+    # raw_text를 포함한 카드 목록 반환 (요약은 on-demand)
     results = []
     for item in items:
         item_id = item.get("id", "")
@@ -414,7 +395,7 @@ async def search_and_summarize(
             "id": item_id,
             "title": item.get("title", "정보"),
             "category": item.get("category", "복지"),
-            "summary": summaries.get(item_id) or _build_basic_summary(item),
+            "summary": "",          # on-demand 요약 전 비어있음
             "raw_text": item.get("raw_text", ""),
             "source_name": item.get("source_name", ""),
             "source_url": item.get("source_url", ""),

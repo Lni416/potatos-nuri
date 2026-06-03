@@ -1424,3 +1424,46 @@ img {
   color: var(--color-text-muted);
   text-align: center;
 }
+
+/* ── 모달 On-demand 요약 로딩 스켈레톤 ── */
+.summary-loading {
+  padding: var(--space-sm) 0;
+}
+.summary-loading__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--color-primary-50);
+  color: var(--color-primary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 5px 14px;
+  border-radius: 999px;
+  margin-bottom: var(--space-lg);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+.summary-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.skeleton-heading {
+  height: 1.1rem;
+  width: 45%;
+  background: linear-gradient(90deg, #eef2ff 25%, #c7d2fe 50%, #eef2ff 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-sm);
+}
+.skeleton-heading.mt { margin-top: var(--space-lg); }
+.skeleton-line.w90 { width: 90%; }
+.skeleton-line.w80 { width: 80%; }
+.skeleton-line.w70 { width: 70%; }
+.skeleton-line.w60 { width: 60%; }
+.skeleton-line.w50 { width: 50%; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.55; }
+}
