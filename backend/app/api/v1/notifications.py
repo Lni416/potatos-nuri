@@ -2,9 +2,10 @@
 
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 
 from app.middleware.auth import verify_firebase_token
+from app.middleware.limiter import limiter
 from app.services.firestore import get_user_notifications, mark_notification_read
 
 logger = logging.getLogger(__name__)
@@ -32,3 +33,18 @@ async def read_notification(
     if not success:
         raise HTTPException(status_code=404, detail="알림을 찾을 수 없거나 권한이 없습니다.")
     return {"status": "ok"}
+
+
+@router.post("/dispatch")
+async def dispatch_notifications(request: Request):
+    """
+    Cloud Scheduler 전용: 마감 D-1/3/7 알림 자동 발송.
+    OIDC 토큰으로 Cloud Scheduler가 호출 (일반 사용자 접근 불가).
+    """
+    from app.jobs.notifications import dispatch_deadline_notifications
+    try:
+        count = dispatch_deadline_notifications()
+        return {"status": "ok", "notifications_created": count}
+    except Exception as e:
+        logger.error("알림 dispatch 오류: %s", e)
+        raise HTTPException(status_code=500, detail=str(e))

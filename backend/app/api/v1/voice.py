@@ -3,11 +3,12 @@
 import logging
 from typing import Literal
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
 
 from app.config import get_settings
 from app.middleware.auth import verify_firebase_token
+from app.middleware.limiter import limiter
 from app.services.voice_nlu import NLUResult, interpret_voice
 
 logger = logging.getLogger(__name__)
@@ -21,8 +22,10 @@ class VoiceInterpretRequest(BaseModel):
 
 
 @router.post("/interpret", response_model=NLUResult)
+@limiter.limit("30/minute")
 async def interpret(
-    request: VoiceInterpretRequest,
+    request: Request,
+    body: VoiceInterpretRequest,
     user: dict = Depends(verify_firebase_token),
 ):
     """
@@ -35,8 +38,8 @@ async def interpret(
         raise HTTPException(status_code=503, detail="AI 서비스가 준비되지 않았습니다.")
 
     result = await interpret_voice(
-        transcript=request.transcript,
-        step=request.step,
+        transcript=body.transcript,
+        step=body.step,
         api_key=settings.GEMINI_API_KEY,
     )
     return result

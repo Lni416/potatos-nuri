@@ -3,10 +3,11 @@
 import logging
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
 
 from app.middleware.auth import verify_firebase_token
+from app.middleware.limiter import limiter
 from google import genai
 
 from app.config import get_settings
@@ -95,8 +96,10 @@ async def trigger_crawl(user: dict = Depends(verify_firebase_token)):
 
 
 @router.post("/summarize", response_model=SummarizeResponse)
+@limiter.limit("20/minute")
 async def summarize(
-    request: SummarizeRequest,
+    request: Request,
+    body: SummarizeRequest,
     user: dict = Depends(verify_firebase_token),
 ):
     """
@@ -114,12 +117,12 @@ async def summarize(
     summary = await summarize_card(
         client=client,
         models=models,
-        title=request.title,
-        raw_text=request.raw_text,
-        age=request.age,
-        region_name=request.region_name,
-        occupation=request.occupation,
-        interests=request.interests,
+        title=body.title,
+        raw_text=body.raw_text,
+        age=body.age,
+        region_name=body.region_name,
+        occupation=body.occupation,
+        interests=body.interests,
     )
 
     if not summary:

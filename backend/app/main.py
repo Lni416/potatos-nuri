@@ -8,11 +8,12 @@ from firebase_admin import credentials
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
-from slowapi.util import get_remote_address
 
 from app.config import get_settings
+from app.middleware.limiter import limiter
+from app.middleware.security_headers import SecurityHeadersMiddleware
 
 logging.basicConfig(
     level=logging.INFO,
@@ -35,9 +36,6 @@ async def lifespan(app: FastAPI):
     # 종료: 특별한 정리 없음
 
 
-# 속도 제한 (UID 기반이 이상적이나, 간단히 IP 기반으로 시작)
-limiter = Limiter(key_func=get_remote_address)
-
 app = FastAPI(
     title="NuRI API",
     description="이용자 맞춤형 복지·행사 정보 요약 서비스",
@@ -47,6 +45,9 @@ app = FastAPI(
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# 보안 헤더 미들웨어
+app.add_middleware(SecurityHeadersMiddleware)
 
 # CORS 미들웨어
 app.add_middleware(

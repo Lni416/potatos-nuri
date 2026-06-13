@@ -2,9 +2,10 @@
 
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 
 from app.middleware.auth import verify_firebase_token
+from app.middleware.limiter import limiter
 from app.services.firestore import get_active_welfare_items, get_user, get_welfare_item
 from app.services.recommendation import rank_items
 
@@ -14,7 +15,9 @@ router = APIRouter(prefix="/api/v1/feed", tags=["feed"])
 
 
 @router.get("")
+@limiter.limit("60/minute")
 async def get_feed(
+    request: Request,
     limit: int = Query(20, ge=1, le=50),
     user: dict = Depends(verify_firebase_token),
 ):

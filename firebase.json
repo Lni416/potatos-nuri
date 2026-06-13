@@ -11,7 +11,7 @@
         "source": "/api/**",
         "run": {
           "serviceId": "nuri-backend",
-          "region": "us-central1"
+          "region": "asia-northeast3"
         }
       },
       {
@@ -19,5 +19,9 @@
         "destination": "/index.html"
       }
     ]
+  },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
   }
 }
