@@ -3,7 +3,10 @@
 import logging
 import uuid
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import JSONResponse
+
+from app.middleware.auth import verify_firebase_token
 from google import genai
 
 from app.config import get_settings
@@ -28,8 +31,9 @@ async def health_check():
     return {"status": "ok", "service": "NuRI API"}
 
 
-@router.post("/search", response_model=SearchResponse)
+@router.post("/search", deprecated=True)
 async def search(request: SearchRequest):
+    """[Deprecated] /api/v1/feed 로 이동하세요."""
     """
     사용자 조건 기반 복지+행사 정보를 Gemini Google Search grounding으로 수집.
     raw_text를 카드에 포함해 반환합니다 (요약은 /summarize에서 on-demand로 처리).
@@ -78,8 +82,23 @@ async def search(request: SearchRequest):
     )
 
 
+@router.post("/internal/crawl")
+async def trigger_crawl(user: dict = Depends(verify_firebase_token)):
+    """관리자 전용: 크롤링 수동 트리거."""
+    from app.middleware.auth import verify_admin_token
+    from app.services.crawler.pipeline import run_crawl_pipeline
+    settings = get_settings()
+    if user.get("uid") not in (settings.ADMIN_UIDS or []):
+        raise HTTPException(status_code=403, detail="관리자 권한이 필요합니다.")
+    result = await run_crawl_pipeline()
+    return result
+
+
 @router.post("/summarize", response_model=SummarizeResponse)
-async def summarize(request: SummarizeRequest):
+async def summarize(
+    request: SummarizeRequest,
+    user: dict = Depends(verify_firebase_token),
+):
     """
     단일 카드를 사용자 프로필에 맞게 개인화 요약합니다.
     카드 클릭 시 프론트엔드에서 호출 (on-demand).

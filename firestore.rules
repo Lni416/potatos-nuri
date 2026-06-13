@@ -1,0 +1,32 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 미인증 사용자 전면 차단
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 사용자 프로필: 본인만 읽기/쓰기
+    match /users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // 복지 아이템: 인증된 사용자 읽기 가능, 쓰기는 서비스 계정만
+    match /welfare_items/{itemId} {
+      allow read: if request.auth != null;
+      allow write: if false;  // 백엔드(서비스 계정)만 쓰기
+    }
+
+    // 인앱 알림: 본인 알림만 읽기/쓰기
+    match /user_notifications/{notifId} {
+      allow read: if request.auth != null
+        && resource.data.userId == request.auth.uid;
+      allow update: if request.auth != null
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isRead']);
+      allow write: if false;  // 백엔드(서비스 계정)만 생성
+    }
+  }
+}
