@@ -86,8 +86,12 @@ export default function ProfilePage() {
   return (
     <div className="profile-page">
       <div className="profile-user">
-        {currentUser?.photoURL && (
+        {currentUser?.photoURL ? (
           <img src={currentUser.photoURL} alt="프로필" className="profile-avatar" width={56} height={56} />
+        ) : (
+          <div className="profile-avatar-initial">
+            {(currentUser?.displayName ?? currentUser?.email ?? "?")[0].toUpperCase()}
+          </div>
         )}
         <div>
           <p className="profile-name">{currentUser?.displayName ?? "사용자"}</p>

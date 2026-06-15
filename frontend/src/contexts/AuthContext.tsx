@@ -66,6 +66,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const result = await createUserWithEmailAndPassword(auth, email, password);
     if (name.trim()) {
       await updateProfile(result.user, { displayName: name.trim() });
+      // updateProfile은 로컬 user 객체만 변경 — 백엔드 sync 전에 토큰 갱신 필요
+      await result.user.getIdToken(true);
     }
     setCurrentUser(result.user);
     await trySyncUser();

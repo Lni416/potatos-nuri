@@ -2311,6 +2311,19 @@ img {
   padding: var(--space-lg);
 }
 .profile-avatar { border-radius: 50%; }
+.profile-avatar-initial {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6C63FF, #4F46E5);
+  color: #fff;
+  font-size: 1.4rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
 .profile-name { font-weight: 700; font-size: var(--font-size-base); }
 .profile-email { font-size: var(--font-size-xs); color: var(--color-text-muted); }
 
