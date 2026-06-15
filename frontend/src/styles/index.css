@@ -3,6 +3,8 @@
    — 고연령층 친화적 + 현대적 프리미엄 디자인
    =================================================== */
 
+@import url('https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap');
+
 /* ── CSS Custom Properties ── */
 :root {
   color-scheme: light;
@@ -36,7 +38,7 @@
   --color-text-on-primary: #ffffff;
 
   /* Typography */
-  --font-family: 'Noto Sans KR', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-family: 'Noto Sans KR', 'Inter', 'Noto Color Emoji', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-size-xs: 1rem;
   --font-size-sm: 1.125rem;
   --font-size-base: 1.25rem;
