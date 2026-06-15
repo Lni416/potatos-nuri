@@ -13,6 +13,7 @@
     "jsx": "react-jsx",
     "allowJs": true,
     "strict": true,
+    "types": ["vite/client"],
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true

@@ -1,24 +1,15 @@
-"""API v1 라우터 — 검색 + 개인화 요약 엔드포인트."""
+"""API v1 라우터 — 요약 + 헬스체크 엔드포인트."""
 
 import logging
-import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.responses import JSONResponse
+from google import genai
 
 from app.middleware.auth import verify_firebase_token
 from app.middleware.limiter import limiter
-from google import genai
-
 from app.config import get_settings
-from app.schemas import (
-    SearchRequest,
-    SearchResponse,
-    SummaryCard,
-    SummarizeRequest,
-    SummarizeResponse,
-)
-from app.services.gemini_search import search_and_summarize, _model_candidates
+from app.schemas import SummarizeRequest, SummarizeResponse
+from app.services.gemini_search import _model_candidates
 from app.services.summarizer import summarize_card
 
 logger = logging.getLogger(__name__)
@@ -32,55 +23,10 @@ async def health_check():
     return {"status": "ok", "service": "NuRI API"}
 
 
-@router.post("/search", deprecated=True)
-async def search(request: SearchRequest):
-    """[Deprecated] /api/v1/feed 로 이동하세요."""
-    """
-    사용자 조건 기반 복지+행사 정보를 Gemini Google Search grounding으로 수집.
-    raw_text를 카드에 포함해 반환합니다 (요약은 /summarize에서 on-demand로 처리).
-    """
-    logger.info(
-        "검색 요청: age=%d, region=%s, occupation=%s, interests=%s",
-        request.age,
-        request.region_name or request.region_code,
-        request.occupation,
-        request.interests,
-    )
-
-    results = await search_and_summarize(
-        age=request.age,
-        region_name=request.region_name or request.region_code,
-        occupation=request.occupation,
-        interests=request.interests,
-    )
-
-    if not results:
-        return SearchResponse(
-            cards=[],
-            total_count=0,
-            message="조건에 맞는 정보를 찾지 못했어요. 잠시 후 다시 시도해 주세요!",
-        )
-
-    cards = [
-        SummaryCard(
-            id=item.get("id") or str(uuid.uuid4())[:8],
-            title=item.get("title", "정보"),
-            category=item.get("category", "복지"),
-            summary="",
-            raw_text=item.get("raw_text", ""),
-            source_url=item.get("source_url", ""),
-            source_name=item.get("source_name", ""),
-            search_region=item.get("search_region", ""),
-            is_region_expanded=item.get("is_region_expanded", False),
-        )
-        for item in results
-    ]
-
-    return SearchResponse(
-        cards=cards,
-        total_count=len(cards),
-        message=f"총 {len(cards)}건의 맞춤 정보를 찾았어요! 🎉",
-    )
+@router.post("/search")
+async def search_gone():
+    """이 엔드포인트는 제거되었습니다. /api/v1/feed 를 사용하세요."""
+    raise HTTPException(status_code=410, detail="/api/v1/search 는 제거되었습니다. GET /api/v1/feed 를 사용하세요.")
 
 
 @router.post("/internal/crawl")
