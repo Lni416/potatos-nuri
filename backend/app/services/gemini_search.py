@@ -16,8 +16,6 @@ from google import genai
 from google.genai import errors, types
 
 from app.config import get_settings
-from app.services.events import fetch_events, format_events_for_summary
-
 logger = logging.getLogger(__name__)
 
 _RULES_PATH = Path(__file__).resolve().parents[3] / "rules.md"
@@ -257,13 +255,8 @@ async def _search_welfare_grounding(
 
 
 async def _collect_events(region_name: str) -> list[dict]:
-    """TourAPI로 지역 행사 수집. 실패해도 빈 리스트 반환."""
-    try:
-        event_items = await fetch_events(region_code=region_name, num_of_rows=20)
-        return format_events_for_summary(event_items)
-    except Exception as e:
-        logger.warning("TourAPI 행사 수집 실패 (무시): %s", e)
-        return []
+    """행사 수집 (TourAPI 서비스 제거로 비활성화)."""
+    return []
 
 
 async def _request_gemini_summaries(
