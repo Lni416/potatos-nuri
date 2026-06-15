@@ -7,11 +7,14 @@ interface Props {
   items: WelfareItem[];
   loading: boolean;
   error: string | null;
+  onRefresh?: () => void;
+  refreshing?: boolean;
+  refreshMessage?: string | null;
 }
 
 const SKELETON_COUNT = 6;
 
-export default function FeedGrid({ items, loading, error }: Props) {
+export default function FeedGrid({ items, loading, error, onRefresh, refreshing, refreshMessage }: Props) {
   if (error) {
     return (
       <div className="feed-error">
@@ -34,8 +37,21 @@ export default function FeedGrid({ items, loading, error }: Props) {
   if (items.length === 0) {
     return (
       <div className="feed-empty">
-        <p>😔 표시할 복지 정보가 없습니다.</p>
-        <p className="feed-empty-sub">프로필을 업데이트하거나 나중에 다시 확인해 보세요.</p>
+        <p>😔 피드를 찾지 못했어요.</p>
+        {refreshMessage ? (
+          <p className="feed-empty-sub">{refreshMessage}</p>
+        ) : (
+          <p className="feed-empty-sub">버튼을 눌러 맞춤 정보를 불러와 보세요.</p>
+        )}
+        {onRefresh && (
+          <button
+            className="feed-refresh-btn"
+            onClick={onRefresh}
+            disabled={refreshing}
+          >
+            {refreshing ? "수집 중..." : "맞춤 정보 불러오기"}
+          </button>
+        )}
       </div>
     );
   }

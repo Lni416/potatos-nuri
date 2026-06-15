@@ -63,6 +63,11 @@ export async function summarizeCard(params: SummarizeParams) {
   });
 }
 
+// Feed refresh (수동 크롤 트리거)
+export async function refreshFeed() {
+  return request<{ status: string; message: string }>("/feed/refresh", { method: "POST" });
+}
+
 // Notifications
 export async function getNotifications() {
   return request<{ notifications: Notification[]; unread_count: number }>(

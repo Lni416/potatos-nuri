@@ -1,8 +1,9 @@
 """개인화 피드 엔드포인트."""
 
+import asyncio
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request
 
 from app.middleware.auth import verify_firebase_token
 from app.middleware.limiter import limiter
@@ -61,6 +62,31 @@ async def get_feed(
         "total_count": len(ranked),
         "message": f"총 {len(ranked)}건의 맞춤 정보를 찾았어요! 🎉",
         "profile_complete": True,
+    }
+
+
+async def _crawl_background() -> None:
+    """백그라운드 크롤링 실행 (응답 반환 후 실행)."""
+    try:
+        from app.services.crawler.pipeline import run_crawl_pipeline
+        result = await run_crawl_pipeline()
+        logger.info("백그라운드 크롤링 완료: %s", result)
+    except Exception as e:
+        logger.error("백그라운드 크롤링 실패: %s", e)
+
+
+@router.post("/refresh")
+@limiter.limit("2/hour")
+async def refresh_feed(
+    request: Request,
+    background_tasks: BackgroundTasks,
+    user: dict = Depends(verify_firebase_token),
+):
+    """피드가 비어있을 때 데이터 수집 수동 트리거. 즉시 반환 후 백그라운드에서 크롤링."""
+    background_tasks.add_task(_crawl_background)
+    return {
+        "status": "collecting",
+        "message": "데이터를 수집 중이에요. 1~2분 후 새로고침해 주세요.",
     }
 
 

@@ -2051,6 +2051,19 @@ img {
 }
 .feed-error-detail { font-size: var(--font-size-xs); margin-top: var(--space-sm); }
 .feed-empty-sub { font-size: var(--font-size-sm); margin-top: var(--space-sm); }
+.feed-refresh-btn {
+  margin-top: var(--space-lg);
+  padding: var(--space-sm) var(--space-xl);
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.feed-refresh-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
 /* ── Welfare Card ── */
 .welfare-card {
