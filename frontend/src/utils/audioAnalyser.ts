@@ -1,10 +1,18 @@
-/**
- * AudioContext + AnalyserNode로 실시간 마이크 볼륨(0~1) 제공.
- */
+interface AudioAnalyser {
+  getVolume(): number;
+  stop(): void;
+}
 
-export async function createAudioAnalyser() {
+declare global {
+  interface Window {
+    webkitAudioContext?: typeof AudioContext;
+  }
+}
+
+export async function createAudioAnalyser(): Promise<AudioAnalyser> {
   const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const AC = window.AudioContext ?? window.webkitAudioContext!;
+  const ctx = new AC();
   const source = ctx.createMediaStreamSource(stream);
   const analyser = ctx.createAnalyser();
   analyser.fftSize = 256;
