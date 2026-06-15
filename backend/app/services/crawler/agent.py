@@ -6,6 +6,7 @@ from typing import Literal
 from pydantic import BaseModel, Field
 from pydantic_ai import Agent
 from pydantic_ai.models.gemini import GeminiModel
+from pydantic_ai.providers.google_gla import GoogleGLAProvider
 
 logger = logging.getLogger(__name__)
 
@@ -59,8 +60,8 @@ _agent: Agent | None = None
 def _get_agent(api_key: str) -> Agent:
     global _agent
     if _agent is None:
-        model = GeminiModel("gemini-2.5-flash", api_key=api_key)
-        _agent = Agent(model=model, result_type=CrawlResult, system_prompt=_SYSTEM_PROMPT)
+        model = GeminiModel("gemini-2.5-flash", provider=GoogleGLAProvider(api_key=api_key))
+        _agent = Agent(model=model, output_type=CrawlResult, system_prompt=_SYSTEM_PROMPT)
     return _agent
 
 
@@ -77,7 +78,7 @@ async def extract_welfare_items(raw_content: str, api_key: str) -> list[CrawledI
     try:
         agent = _get_agent(api_key)
         result = await agent.run(prompt)
-        items = result.data.items
+        items = result.output.items
         logger.info("크롤러 에이전트: %d건 추출", len(items))
         return items
     except Exception as e:

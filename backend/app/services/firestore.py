@@ -5,18 +5,17 @@ from datetime import datetime, timezone
 from functools import lru_cache
 from typing import Any
 
-from google.cloud import firestore
+from firebase_admin import firestore as admin_firestore
+from google.cloud.firestore_v1 import Client
 from google.cloud.firestore_v1.base_query import FieldFilter
 
 logger = logging.getLogger(__name__)
 
 
 @lru_cache(maxsize=1)
-def get_db() -> firestore.Client:
-    """Firestore 클라이언트 싱글턴."""
-    from app.config import get_settings
-    settings = get_settings()
-    return firestore.Client(project=settings.FIREBASE_PROJECT_ID)
+def get_db() -> Client:
+    """Firestore 클라이언트 싱글턴 — firebase_admin 인증 재사용."""
+    return admin_firestore.client()
 
 
 # ── 사용자 ──────────────────────────────────────────────────────────────────

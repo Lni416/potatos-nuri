@@ -6,6 +6,7 @@ from typing import Literal
 from pydantic import BaseModel, Field
 from pydantic_ai import Agent
 from pydantic_ai.models.gemini import GeminiModel
+from pydantic_ai.providers.google_gla import GoogleGLAProvider
 
 logger = logging.getLogger(__name__)
 
@@ -65,8 +66,8 @@ _agent: Agent | None = None
 def _get_agent(api_key: str) -> Agent:
     global _agent
     if _agent is None:
-        model = GeminiModel("gemini-2.5-flash-lite", api_key=api_key)
-        _agent = Agent(model=model, result_type=NLUResult, system_prompt=_SYSTEM_PROMPT)
+        model = GeminiModel("gemini-2.5-flash-lite", provider=GoogleGLAProvider(api_key=api_key))
+        _agent = Agent(model=model, output_type=NLUResult, system_prompt=_SYSTEM_PROMPT)
     return _agent
 
 
@@ -89,7 +90,7 @@ async def interpret_voice(transcript: str, step: str, api_key: str) -> NLUResult
     try:
         agent = _get_agent(api_key)
         result = await agent.run(prompt)
-        nlu: NLUResult = result.data
+        nlu: NLUResult = result.output
 
         # labels 매핑 (age step)
         if step == "age" and nlu.matched_value and "labels" in ctx:
