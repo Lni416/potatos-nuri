@@ -15,6 +15,7 @@ from app.services.firestore import get_db, upsert_welfare_item
 logger = logging.getLogger(__name__)
 
 # 광역 검색 쿼리 목록 (카테고리별 광역 검색)
+# key는 target_interests에 주입할 카테고리 값 — 프로필 관심분야 선택지와 1:1 대응해야 추천 점수가 붙음
 CRAWL_QUERIES = [
     ("생활지원", "복지로 생활지원 긴급복지 기초생활수급 신청가능 2025"),
     ("의료건강", "복지로 의료급여 건강지원 복지서비스 신청가능 2025"),
@@ -24,8 +25,9 @@ CRAWL_QUERIES = [
     ("임신육아", "복지로 임신출산 육아지원 아동수당 보육료 2025"),
     ("노인돌봄", "복지로 기초연금 노인돌봄 장기요양 어르신지원 2025"),
     ("문화여가", "복지로 문화누리 통합문화이용권 여가지원 2025"),
-    ("법률인권", "복지로 법률구조 권익보호 피해지원 2025"),
-    ("장애지원", "복지로 장애인연금 활동보조 장애서비스 2025"),
+    # 법률·장애 카테고리는 프로필에 없으므로 생활지원으로 매핑
+    ("생활지원", "복지로 법률구조 권익보호 피해지원 2025"),
+    ("생활지원", "복지로 장애인연금 활동보조 장애서비스 2025"),
 ]
 
 
@@ -33,6 +35,15 @@ def _make_item_id(source_name: str, title: str) -> str:
     """결정적 해시로 중복 방지 ID 생성."""
     key = f"{source_name}::{title}"
     return hashlib.sha1(key.encode("utf-8")).hexdigest()[:12]
+
+
+# 프로필 관심분야 선택지 — 이 목록에 없는 값은 추천 점수가 붙지 않으므로 저장 전 필터링
+_VALID_INTERESTS = {
+    "생활지원", "의료건강", "주거", "취업고용",
+    "교육장학", "임신육아", "노인돌봄", "문화여가",
+}
+# 프로필 직업 선택지 — 이 목록에 없는 값은 추천 점수가 붙지 않음
+_VALID_OCCUPATIONS = {"학생", "직장인", "자영업자", "은퇴", "기타"}
 
 
 def _item_to_firestore(item: CrawledItem, crawled_at: datetime) -> dict:
@@ -61,8 +72,8 @@ def _item_to_firestore(item: CrawledItem, crawled_at: datetime) -> dict:
         ),
         "targetAgeMin": item.target_age_min,
         "targetAgeMax": item.target_age_max,
-        "targetOccupations": item.target_occupations,
-        "targetInterests": item.target_interests,
+        "targetOccupations": [o for o in item.target_occupations if o in _VALID_OCCUPATIONS],
+        "targetInterests": [i for i in item.target_interests if i in _VALID_INTERESTS],
         "regions": item.regions or ["전국"],
         "crawledAt": crawled_at,
         "expiresAt": expires_at,
