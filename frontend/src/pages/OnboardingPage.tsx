@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import VoiceOnboarding from "../components/onboarding/VoiceOnboarding";
 import TextOnboarding from "../components/onboarding/TextOnboarding";
 import { FormData } from "../components/onboarding/StepSelector";
@@ -10,6 +10,8 @@ type Mode = "voice" | "text";
 
 export default function OnboardingPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const returnTo = searchParams.get("from") === "profile" ? "/profile" : "/feed";
   const [mode, setMode] = useState<Mode>(isSpeechSupported() ? "voice" : "text");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -26,7 +28,7 @@ export default function OnboardingPage() {
         interests: data.interests,
       };
       await updateProfile(profile);
-      navigate("/feed", { replace: true });
+      navigate(returnTo, { replace: true });
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "저장 중 오류가 발생했습니다.");
       setSaving(false);

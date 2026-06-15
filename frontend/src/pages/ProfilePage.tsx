@@ -168,6 +168,14 @@ export default function ProfilePage() {
         </button>
       </form>
 
+      <button
+        className="profile-reonboard"
+        type="button"
+        onClick={() => navigate("/onboarding?from=profile")}
+      >
+        🎤 음성으로 프로필 다시 설정
+      </button>
+
       <button className="profile-signout" onClick={handleSignOut}>
         로그아웃
       </button>
