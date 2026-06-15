@@ -6,6 +6,7 @@ from functools import lru_cache
 from typing import Any
 
 from firebase_admin import firestore as admin_firestore
+from google.cloud import firestore
 from google.cloud.firestore_v1 import Client
 from google.cloud.firestore_v1.base_query import FieldFilter
 
