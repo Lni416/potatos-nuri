@@ -67,13 +67,6 @@
         { "fieldPath": "welfareItemId", "order": "ASCENDING" },
         { "fieldPath": "type", "order": "ASCENDING" }
       ]
-    },
-    {
-      "collectionGroup": "users",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "profile.interests", "arrayConfig": "CONTAINS" }
-      ]
     }
   ],
   "fieldOverrides": []
