@@ -1,6 +1,52 @@
 import React, { useState, forwardRef, useImperativeHandle } from "react";
 import { interpretVoice, NLUResult } from "../../utils/api";
 
+// 한국어 수사 → 나이(숫자) 변환
+function parseKoreanAge(text: string): number | null {
+  // 아라비아 숫자: "23살", "35세"
+  const arabic = text.match(/(\d+)\s*(?:살|세)/);
+  if (arabic) return parseInt(arabic[1]);
+
+  const tens: Record<string, number> = {
+    열: 10, 스물: 20, 서른: 30, 마흔: 40,
+    쉰: 50, 예순: 60, 일흔: 70, 여든: 80, 아흔: 90,
+  };
+  const units: Record<string, number> = {
+    하나: 1, 둘: 2, 셋: 3, 넷: 4, 다섯: 5,
+    여섯: 6, 일곱: 7, 여덟: 8, 아홉: 9,
+  };
+  const sinoTens: Record<string, number> = {
+    이십: 20, 삼십: 30, 사십: 40, 오십: 50,
+    육십: 60, 칠십: 70, 팔십: 80, 구십: 90,
+  };
+  const sinoUnits: Record<string, number> = {
+    일: 1, 이: 2, 삼: 3, 사: 4, 오: 5,
+    육: 6, 칠: 7, 팔: 8, 구: 9,
+  };
+
+  // 고유어: "쉰다섯" → 55, "스물셋" → 23
+  for (const [dec, dv] of Object.entries(tens)) {
+    if (text.includes(dec)) {
+      for (const [u, uv] of Object.entries(units)) {
+        if (text.includes(dec + u)) return dv + uv;
+      }
+      return dv;
+    }
+  }
+
+  // 한자어: "이십삼" → 23, "오십오" → 55
+  for (const [dec, dv] of Object.entries(sinoTens)) {
+    if (text.includes(dec)) {
+      for (const [u, uv] of Object.entries(sinoUnits)) {
+        if (text.includes(dec + u)) return dv + uv;
+      }
+      return dv;
+    }
+  }
+
+  return null;
+}
+
 export interface StepOption {
   value: string;
   label: string;
@@ -139,7 +185,8 @@ const StepSelector = forwardRef<StepSelectorHandle, Props>(function StepSelector
 
     for (const opt of step.options) {
       if (opt.keywords.some((kw) => lower.includes(kw.toLowerCase()))) {
-        select(opt);
+        const exactAge = step.id === "age" ? parseKoreanAge(transcript) : null;
+        select(opt, exactAge);
         return;
       }
     }
