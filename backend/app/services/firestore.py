@@ -70,6 +70,21 @@ def upsert_welfare_item(item_id: str, data: dict) -> None:
     db.collection("welfare_items").document(item_id).set(data, merge=True)
 
 
+def get_cached_summary(item_id: str) -> dict | None:
+    """welfare_items/{id}.summaryCache 조회. {markdown, trustLevel, unverified, generatedAt} 또는 None."""
+    db = get_db()
+    doc = db.collection("welfare_items").document(item_id).get()
+    if not doc.exists:
+        return None
+    return doc.to_dict().get("summaryCache")
+
+
+def set_cached_summary(item_id: str, payload: dict) -> None:
+    """생성된 사실 요약을 캐시에 저장."""
+    db = get_db()
+    db.collection("welfare_items").document(item_id).update({"summaryCache": payload})
+
+
 def deactivate_expired_items() -> int:
     """만료된 아이템을 비활성화. 비활성화된 건수 반환."""
     db = get_db()

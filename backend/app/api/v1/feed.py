@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request
 
@@ -13,6 +14,15 @@ from app.services.recommendation import rank_items
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/feed", tags=["feed"])
+
+
+def _not_expired(item: dict) -> bool:
+    """신청 마감이 지나지 않은 아이템만 통과. 마감일 없으면 항상 통과."""
+    deadline = item.get("applyDeadline")
+    if not deadline or not hasattr(deadline, "tzinfo"):
+        return True
+    dt = deadline if deadline.tzinfo else deadline.replace(tzinfo=timezone.utc)
+    return dt > datetime.now(timezone.utc)
 
 
 @router.get("")
@@ -31,8 +41,8 @@ async def get_feed(
     profile = (user_data or {}).get("profile", {})
 
     if not profile:
-        # 프로필 없는 경우 최신 아이템 반환
-        items = get_active_welfare_items(limit=limit)
+        # 프로필 없는 경우 최신 아이템 반환 (만료 공고 제외)
+        items = [it for it in get_active_welfare_items(limit=100) if _not_expired(it)][:limit]
         return {
             "cards": items,
             "total_count": len(items),
@@ -40,7 +50,8 @@ async def get_feed(
             "profile_complete": False,
         }
 
-    raw_items = get_active_welfare_items(limit=100)
+    # 만료 공고는 랭킹·카운트 전에 제외 → 메시지 개수와 실제 카드 수 일치
+    raw_items = [it for it in get_active_welfare_items(limit=100) if _not_expired(it)]
     if not raw_items:
         return {
             "cards": [],

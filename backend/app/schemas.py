@@ -37,12 +37,13 @@ class SearchResponse(BaseModel):
 
 
 class SummarizeRequest(BaseModel):
-    """단일 카드 on-demand 요약 요청."""
+    """단일 카드 on-demand 요약 요청. 사실 본문은 item_id로 Firestore에서 조회/캐싱하고,
+    프로필 필드는 규칙 기반 자격 판정(eligibility_hint)에만 사용한다."""
 
-    title: str = Field(..., description="서비스 제목")
-    raw_text: str = Field(..., description="원문 텍스트")
+    item_id: str = Field(..., description="welfare_items 문서 ID (캐시 키·권위 데이터 조회)")
     age: int = Field(30, ge=0, le=120, description="사용자 나이")
-    region_name: str = Field("", description="거주 지역")
+    region_name: str = Field("", description="거주 지역명")
+    region_code: str = Field("", description="거주 지역 코드")
     occupation: str = Field("기타", description="직업 상태")
     interests: list[str] = Field(default_factory=list, description="관심 분야")
 
@@ -50,4 +51,8 @@ class SummarizeRequest(BaseModel):
 class SummarizeResponse(BaseModel):
     """단일 카드 요약 응답."""
 
-    summary: str = Field(..., description="개인화된 마크다운 요약")
+    summary: str = Field(..., description="비개인화 마크다운 사실 요약")
+    trust_level: str = Field("medium", description="신뢰도: high|medium|low")
+    unverified_notes: list[str] = Field(default_factory=list, description="공식 출처로 확인 못 한 항목들")
+    official_url: str = Field("", description="공식 출처 URL")
+    eligibility_hint: str = Field("", description="규칙 기반 자격 안내 한 줄")
