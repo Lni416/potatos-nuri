@@ -5,8 +5,8 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 from pydantic_ai import Agent
-from pydantic_ai.models.gemini import GeminiModel
-from pydantic_ai.providers.google_gla import GoogleGLAProvider
+from pydantic_ai.models.google import GoogleModel
+from pydantic_ai.providers.google import GoogleProvider
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +60,7 @@ _agent: Agent | None = None
 def _get_agent(api_key: str) -> Agent:
     global _agent
     if _agent is None:
-        model = GeminiModel("gemini-2.5-flash", provider=GoogleGLAProvider(api_key=api_key))
+        model = GoogleModel("gemini-2.5-flash", provider=GoogleProvider(api_key=api_key))
         _agent = Agent(model=model, output_type=CrawlResult, system_prompt=_SYSTEM_PROMPT)
     return _agent
 
