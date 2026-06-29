@@ -4,6 +4,9 @@ import { WelfareItem } from "../../utils/api";
 
 interface Props {
   item: WelfareItem;
+  isBookmarked?: boolean;
+  onToggleBookmark?: (id: string) => void;
+  large?: boolean;
 }
 
 const CATEGORY_ICONS: Record<string, string> = {
@@ -24,7 +27,7 @@ function daysUntil(deadline: string): number {
   return Math.ceil(diff / 86400000);
 }
 
-export default function WelfareCard({ item }: Props) {
+export default function WelfareCard({ item, isBookmarked, onToggleBookmark, large }: Props) {
   const navigate = useNavigate();
   const icon = CATEGORY_ICONS[item.category] ?? "📋";
   const isEvent = item.category === "행사";
@@ -47,7 +50,7 @@ export default function WelfareCard({ item }: Props) {
 
   return (
     <article
-      className={`welfare-card${isEvent ? " welfare-card--event" : ""}`}
+      className={`welfare-card${isEvent ? " welfare-card--event" : ""}${large ? " welfare-card--large" : ""}`}
       onClick={() => navigate(`/feed/${item.id}`)}
       role="button"
       tabIndex={0}
@@ -62,6 +65,15 @@ export default function WelfareCard({ item }: Props) {
           <span className="badge badge--region" title={`${item.search_region ?? ""} 지역 기준 확장`}>
             +광역
           </span>
+        )}
+        {onToggleBookmark && (
+          <button
+            className="welfare-card-bookmark"
+            onClick={(e) => { e.stopPropagation(); onToggleBookmark(item.id); }}
+            aria-label={isBookmarked ? "찜 해제" : "찜하기"}
+          >
+            {isBookmarked ? "❤️" : "🤍"}
+          </button>
         )}
       </div>
       <h3 className="welfare-card-title">{item.title}</h3>

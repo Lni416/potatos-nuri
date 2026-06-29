@@ -1,7 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getFeedItem, summarizeCard, getMyProfile, WelfareItem, UserProfile } from "../utils/api";
+import { getFeedItem, summarizeCard, getMyProfile, WelfareItem, UserProfile, SummarizeResponse } from "../utils/api";
 import SummaryRenderer from "../components/ui/SummaryRenderer";
+
+const TRUST_META: Record<string, { cls: string; icon: string; label: string }> = {
+  high: { cls: "trust-badge--high", icon: "🟢", label: "공식 정보로 확인했어요" },
+  medium: { cls: "trust-badge--medium", icon: "🟡", label: "일부 내용은 확인이 필요해요" },
+  low: { cls: "trust-badge--low", icon: "🔴", label: "공식 사이트에서 꼭 확인하세요" },
+};
 
 export default function ItemDetailPage() {
   const { itemId } = useParams<{ itemId: string }>();
@@ -9,7 +15,7 @@ export default function ItemDetailPage() {
 
   const [item, setItem] = useState<WelfareItem | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [summary, setSummary] = useState<string | null>(null);
+  const [result, setResult] = useState<SummarizeResponse | null>(null);
   const [loadingItem, setLoadingItem] = useState(true);
   const [loadingSummary, setLoadingSummary] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,20 +33,28 @@ export default function ItemDetailPage() {
   }, [itemId]);
 
   useEffect(() => {
-    if (!item || !profile) return;
+    if (!item || !profile || !itemId) return;
     setLoadingSummary(true);
     summarizeCard({
-      title: item.title,
-      raw_text: item.rawText ?? item.raw_text ?? "",
+      item_id: itemId,
       age: profile.age,
       region_name: profile.regionName,
+      region_code: profile.regionCode,
       occupation: profile.occupation,
       interests: profile.interests,
     })
-      .then(({ summary: s }) => setSummary(s))
-      .catch(() => setSummary("요약을 불러오지 못했어요. 잠시 후 다시 시도해 주세요."))
+      .then((r) => setResult(r))
+      .catch(() =>
+        setResult({
+          summary: "요약을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.",
+          trust_level: "low",
+          unverified_notes: [],
+          official_url: item.sourceUrl ?? item.source_url ?? "",
+          eligibility_hint: "",
+        })
+      )
       .finally(() => setLoadingSummary(false));
-  }, [item, profile]);
+  }, [item, profile, itemId]);
 
   if (loadingItem) {
     return <div className="loading-screen"><span className="loading-spinner" /></div>;
@@ -96,6 +110,14 @@ export default function ItemDetailPage() {
         <h2 className="detail-summary-heading">
           ✦ AI 요약{loadingSummary && <span className="summary-loading-dot">...</span>}
         </h2>
+
+        {!loadingSummary && result && (
+          <div className={`trust-badge ${TRUST_META[result.trust_level]?.cls ?? "trust-badge--medium"}`}>
+            <span className="trust-badge-icon">{TRUST_META[result.trust_level]?.icon ?? "🟡"}</span>
+            <span>{TRUST_META[result.trust_level]?.label ?? "일부 내용은 확인이 필요해요"}</span>
+          </div>
+        )}
+
         {loadingSummary ? (
           <div className="summary-skeleton">
             <div className="skeleton-heading" />
@@ -105,7 +127,42 @@ export default function ItemDetailPage() {
             <div className="skeleton-line w90" />
           </div>
         ) : (
-          <SummaryRenderer text={summary ?? ""} />
+          <>
+            <SummaryRenderer text={result?.summary ?? ""} />
+
+            {result?.eligibility_hint && (
+              <p className="eligibility-hint">{result.eligibility_hint}</p>
+            )}
+
+            {result && result.unverified_notes.length > 0 && (
+              <div className="unverified-callout">
+                <p className="unverified-title">⚠️ 확인이 필요한 정보</p>
+                <p className="unverified-desc">
+                  아래 항목은 공식 출처로 정확히 확인하지 못했어요. 신청 전 꼭 확인하세요.
+                </p>
+                <ul className="unverified-list">
+                  {result.unverified_notes.map((note, i) => (
+                    <li key={i}>{note}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {(result?.official_url || item.sourceUrl || item.source_url) && (
+              <a
+                className="official-cta"
+                href={result?.official_url || item.sourceUrl || item.source_url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                공식 사이트에서 확인하기 →
+              </a>
+            )}
+
+            <p className="summary-disclaimer">
+              AI가 정리한 내용이에요. 신청 전 공식 사이트에서 최종 확인하세요.
+            </p>
+          </>
         )}
       </section>
     </article>

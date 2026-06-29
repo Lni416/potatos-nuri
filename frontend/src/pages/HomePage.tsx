@@ -1,7 +1,18 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getFeed, refreshFeed, FeedResponse, WelfareItem } from "../utils/api";
+import CardCarousel from "../components/feed/CardCarousel";
+import BookmarkList from "../components/feed/BookmarkList";
 import FeedGrid from "../components/feed/FeedGrid";
+import { useBookmarks } from "../hooks/useBookmarks";
+
+type TabId = 0 | 1 | 2;
+
+const TABS = [
+  { id: 0 as TabId, icon: "🏠", label: "메인" },
+  { id: 1 as TabId, icon: "❤️", label: "찜" },
+  { id: 2 as TabId, icon: "☰", label: "목록" },
+];
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -11,6 +22,8 @@ export default function HomePage() {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [refreshMessage, setRefreshMessage] = useState<string | null>(null);
+  const [tab, setTab] = useState<TabId>(0);
+  const { toggle, isBookmarked } = useBookmarks();
 
   const loadFeed = useCallback(async () => {
     setLoading(true);
@@ -21,6 +34,7 @@ export default function HomePage() {
         navigate("/onboarding", { replace: true });
         return;
       }
+      // 만료 공고 제외는 백엔드에서 처리 → cards 개수가 곧 표시 개수 (메시지와 일치)
       setFeed(data.cards);
       setMessage(data.message);
     } catch (e: unknown) {
@@ -40,7 +54,6 @@ export default function HomePage() {
     try {
       const res = await refreshFeed();
       setRefreshMessage(res.message);
-      // 크롤링이 백그라운드에서 실행되므로 2분 후 피드 재조회
       setTimeout(() => {
         loadFeed().finally(() => {
           setRefreshing(false);
@@ -54,17 +67,53 @@ export default function HomePage() {
 
   return (
     <section className="home-page">
-      {message && !loading && (
+      {message && !loading && tab === 0 && (
         <p className="feed-message">{message}</p>
       )}
-      <FeedGrid
-        items={feed}
-        loading={loading}
-        error={error}
-        onRefresh={handleRefresh}
-        refreshing={refreshing}
-        refreshMessage={refreshMessage}
-      />
+
+      {tab === 0 && (
+        <CardCarousel
+          items={feed}
+          loading={loading}
+          error={error}
+          isBookmarked={isBookmarked}
+          onToggleBookmark={toggle}
+        />
+      )}
+      {tab === 1 && (
+        <BookmarkList
+          items={feed}
+          loading={loading}
+          isBookmarked={isBookmarked}
+          onToggleBookmark={toggle}
+        />
+      )}
+      {tab === 2 && (
+        <FeedGrid
+          items={feed}
+          loading={loading}
+          error={error}
+          onRefresh={handleRefresh}
+          refreshing={refreshing}
+          refreshMessage={refreshMessage}
+          isBookmarked={isBookmarked}
+          onToggleBookmark={toggle}
+        />
+      )}
+
+      <nav className="home-tab-nav" aria-label="메뉴">
+        {TABS.map(({ id, icon, label }) => (
+          <button
+            key={id}
+            className={`tab-btn${tab === id ? " active" : ""}`}
+            onClick={() => setTab(id)}
+            aria-current={tab === id ? "page" : undefined}
+          >
+            <span className="tab-icon">{icon}</span>
+            <span>{label}</span>
+          </button>
+        ))}
+      </nav>
     </section>
   );
 }

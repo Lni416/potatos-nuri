@@ -1,7 +1,32 @@
-import React from "react";
+import React, { useState } from "react";
 import { WelfareItem } from "../../utils/api";
 import WelfareCard from "./WelfareCard";
 import WelfareCardSkeleton from "./WelfareCardSkeleton";
+
+type SortKey = "score" | "deadline" | "recent";
+
+const SORT_LABELS: { key: SortKey; label: string }[] = [
+  { key: "score", label: "추천순" },
+  { key: "deadline", label: "마감 임박순" },
+  { key: "recent", label: "최신순" },
+];
+
+function sortItems(items: WelfareItem[], sort: SortKey): WelfareItem[] {
+  switch (sort) {
+    case "score":
+      return [...items].sort((a, b) => (b._score ?? 0) - (a._score ?? 0));
+    case "deadline":
+      return [...items].sort((a, b) => {
+        if (!a.applyDeadline && !b.applyDeadline) return 0;
+        if (!a.applyDeadline) return 1;
+        if (!b.applyDeadline) return -1;
+        return new Date(a.applyDeadline).getTime() - new Date(b.applyDeadline).getTime();
+      });
+    case "recent":
+    default:
+      return items;
+  }
+}
 
 interface Props {
   items: WelfareItem[];
@@ -10,11 +35,17 @@ interface Props {
   onRefresh?: () => void;
   refreshing?: boolean;
   refreshMessage?: string | null;
+  isBookmarked?: (id: string) => boolean;
+  onToggleBookmark?: (id: string) => void;
 }
 
 const SKELETON_COUNT = 6;
 
-export default function FeedGrid({ items, loading, error, onRefresh, refreshing, refreshMessage }: Props) {
+export default function FeedGrid({
+  items, loading, error, onRefresh, refreshing, refreshMessage, isBookmarked, onToggleBookmark,
+}: Props) {
+  const [sort, setSort] = useState<SortKey>("score");
+
   if (error) {
     return (
       <div className="feed-error">
@@ -56,11 +87,31 @@ export default function FeedGrid({ items, loading, error, onRefresh, refreshing,
     );
   }
 
+  const sorted = sortItems(items, sort);
+
   return (
-    <div className="feed-grid">
-      {items.map((item) => (
-        <WelfareCard key={item.id} item={item} />
-      ))}
-    </div>
+    <>
+      <div className="feed-sort-bar">
+        {SORT_LABELS.map(({ key, label }) => (
+          <button
+            key={key}
+            className={`sort-btn${sort === key ? " active" : ""}`}
+            onClick={() => setSort(key)}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+      <div className="feed-grid">
+        {sorted.map((item) => (
+          <WelfareCard
+            key={item.id}
+            item={item}
+            isBookmarked={isBookmarked?.(item.id)}
+            onToggleBookmark={onToggleBookmark}
+          />
+        ))}
+      </div>
+    </>
   );
 }

@@ -57,7 +57,7 @@ export async function getFeedItem(itemId: string) {
 
 // Summarize (on-demand, card click)
 export async function summarizeCard(params: SummarizeParams) {
-  return request<{ summary: string }>("/summarize", {
+  return request<SummarizeResponse>("/summarize", {
     method: "POST",
     body: JSON.stringify(params),
   });
@@ -126,12 +126,20 @@ export interface FeedResponse {
 }
 
 export interface SummarizeParams {
-  title: string;
-  raw_text: string;
+  item_id: string;
   age: number;
   region_name: string;
+  region_code: string;
   occupation: string;
   interests: string[];
+}
+
+export interface SummarizeResponse {
+  summary: string;
+  trust_level: "high" | "medium" | "low";
+  unverified_notes: string[];
+  official_url: string;
+  eligibility_hint: string;
 }
 
 export interface Notification {

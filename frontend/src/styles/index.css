@@ -1046,56 +1046,8 @@ img {
   color: var(--color-text-secondary);
   margin: 0;
 }
-.nuri-card-modal .term-help::after {
-  font-size: 1.05rem;
-  z-index: 30;
-}
-
-.term-help {
-  position: relative;
-  display: inline;
-  padding: 0 0.15em;
-  font: inherit;
-  font-weight: var(--font-weight-bold);
-  color: var(--color-primary-dark);
-  background: var(--color-primary-50);
-  border: 0;
-  border-bottom: 2px dotted var(--color-primary);
-  border-radius: var(--radius-sm);
-  cursor: help;
-}
-.term-help::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  left: 0;
-  top: calc(100% + 0.5rem);
-  bottom: auto;
-  z-index: 20;
-  width: min(22rem, 80vw);
-  max-height: min(50vh, 18rem);
-  overflow-y: auto;
-  padding: var(--space-md);
-  color: var(--color-text);
-  background: #ffffff;
-  border: 3px solid var(--color-primary);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
-  font-size: var(--font-size-sm);
-  line-height: 1.6;
-  text-align: left;
-  white-space: normal;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(-0.25rem);
-  transition: opacity var(--transition-fast), transform var(--transition-fast);
-}
-.term-help:hover::after,
-.term-help:focus-visible::after,
-.term-help:active::after {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-}
+/* 레거시 용어 툴팁(.term-help::after, data-tooltip 기반)은 제거됨.
+   현재 React SummaryRenderer는 실제 .term-tooltip 엘리먼트를 사용한다(파일 하단 참조). */
 
 .card-toggle-btn {
   display: inline-flex;
@@ -2284,6 +2236,71 @@ img {
 .summary-content li { font-size: var(--font-size-sm); line-height: var(--line-height); color: var(--color-text-secondary); margin-bottom: 4px; }
 .summary-content hr { border: none; border-top: 1px solid var(--color-border-light); margin: var(--space-lg) 0; }
 
+/* ── 신뢰도 배지 ── */
+.trust-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  margin-bottom: var(--space-lg);
+  border: 1.5px solid transparent;
+}
+.trust-badge-icon { font-size: 1.1rem; }
+.trust-badge--high { background: #ecfdf5; color: #047857; border-color: #6ee7b7; }
+.trust-badge--medium { background: #fffbeb; color: #b45309; border-color: #fcd34d; }
+.trust-badge--low { background: #fef2f2; color: #b91c1c; border-color: #fca5a5; }
+
+/* ── 자격 안내 ── */
+.eligibility-hint {
+  margin-top: var(--space-md);
+  padding: var(--space-md);
+  background: var(--color-primary-50);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height);
+}
+
+/* ── 확인 필요 콜아웃 ── */
+.unverified-callout {
+  margin-top: var(--space-lg);
+  padding: var(--space-md) var(--space-lg);
+  background: #fffbeb;
+  border: 1.5px solid #fcd34d;
+  border-radius: var(--radius-md);
+}
+.unverified-title { font-size: var(--font-size-sm); font-weight: 700; color: #b45309; margin-bottom: var(--space-xs); }
+.unverified-desc { font-size: var(--font-size-xs); color: var(--color-text-muted); margin-bottom: var(--space-sm); line-height: 1.6; }
+.unverified-list { padding-left: var(--space-lg); }
+.unverified-list li { font-size: var(--font-size-sm); font-weight: 600; color: #92400e; margin-bottom: 4px; }
+
+/* ── 공식 사이트 CTA ── */
+.official-cta {
+  display: block;
+  margin-top: var(--space-lg);
+  padding: var(--space-md) var(--space-lg);
+  background: var(--color-primary);
+  color: #fff;
+  text-align: center;
+  text-decoration: none;
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  border-radius: var(--radius-lg);
+  transition: background var(--transition-fast);
+}
+.official-cta:hover { background: var(--color-primary-dark); color: #fff; }
+
+.summary-disclaimer {
+  margin-top: var(--space-md);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  text-align: center;
+  line-height: 1.6;
+}
+
 .detail-error {
   text-align: center;
   padding: var(--space-3xl);
@@ -2291,7 +2308,7 @@ img {
 }
 
 /* ── Glossary Tooltip ── */
-.term-help-wrap { position: relative; display: inline; }
+.term-help-wrap { position: relative; display: inline-block; }
 .term-help {
   background: none;
   border: none;
@@ -2440,3 +2457,185 @@ img {
   transition: all var(--transition-fast);
 }
 .profile-signout:hover { border-color: var(--color-error); color: var(--color-error); }
+
+/* ── Home Tab Navigation ── */
+.home-page { padding-bottom: 68px !important; }
+
+.home-tab-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 200;
+  display: flex;
+  background: var(--color-bg-elevated);
+  border-top: 1px solid var(--color-border-light);
+  height: 60px;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06);
+}
+
+.tab-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+  transition: color var(--transition-fast);
+  padding: 8px 0;
+}
+.tab-btn .tab-icon {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+.tab-btn.active { color: var(--color-primary); }
+
+/* ── Card Carousel ── */
+.carousel-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md) 0 var(--space-lg);
+  overflow: hidden;
+}
+
+/* 가로 스크롤 + 스냅 컨테이너 */
+.carousel-scroll {
+  display: flex;
+  align-items: center;
+  overflow-x: scroll;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  gap: 14px;
+  width: 100%;
+  padding: 20px 0;
+  /* 스크롤 중 부드럽게, 스냅 후 락 */
+  scroll-behavior: auto;
+  /* 마우스로 꾹 눌러 끌기 */
+  cursor: grab;
+  user-select: none;
+}
+.carousel-scroll:active { cursor: grabbing; }
+.carousel-scroll::-webkit-scrollbar { display: none; }
+
+/* 첫/마지막 카드를 가운데 정렬하기 위한 여백 */
+.carousel-spacer {
+  flex: 0 0 14%;
+  min-width: 14%;
+}
+
+/* 개별 카드 슬롯 */
+.carousel-item {
+  flex: 0 0 72%;
+  scroll-snap-align: center;
+  will-change: opacity, transform;
+  transform-origin: center center;
+  transition: box-shadow 0.2s ease;
+}
+
+.welfare-card--large {
+  padding: var(--space-xl);
+  min-height: 200px;
+  box-shadow: var(--shadow-lg);
+}
+.welfare-card--large .welfare-card-title { font-size: var(--font-size-lg); }
+
+.carousel-counter-bar {
+  display: flex;
+  justify-content: center;
+}
+.carousel-counter {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.carousel-dots {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 260px;
+}
+.carousel-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  background: var(--color-border);
+  cursor: pointer;
+  padding: 0;
+  transition: all var(--transition-fast);
+}
+.carousel-dot.active {
+  background: var(--color-primary);
+  transform: scale(1.35);
+}
+
+/* ── Bookmark Button on Card ── */
+.welfare-card-bookmark {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 4px;
+  line-height: 1;
+  margin-left: auto;
+  font-size: 1.2rem;
+  transition: transform var(--transition-fast);
+  flex-shrink: 0;
+}
+.welfare-card-bookmark:hover { transform: scale(1.25); }
+
+/* ── Feed List (vertical, for bookmarks) ── */
+.feed-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.bookmark-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-3xl) var(--space-md);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+.bookmark-empty-icon { font-size: 3rem; }
+
+/* ── Feed Sort Bar ── */
+.feed-sort-bar {
+  display: flex;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+  flex-wrap: wrap;
+}
+.sort-btn {
+  padding: 6px 16px;
+  border-radius: var(--radius-full);
+  border: 1.5px solid var(--color-border);
+  background: var(--color-bg-elevated);
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.sort-btn.active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+.sort-btn:hover:not(.active) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
