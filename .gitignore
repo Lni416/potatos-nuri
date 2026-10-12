@@ -40,3 +40,6 @@ dist/
 .vscode/
 *.swp
 *.swo
+
+# backups
+*.bak
